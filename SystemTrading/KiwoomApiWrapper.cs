@@ -42,6 +42,18 @@ namespace SystemTrading
         [Description("종목코드없음")] OP_ERR_ORD_SYMCODE_EMPTY = -500
     }
 
+    public class BaseStructure
+    {
+
+    }
+
+    public class TrStructure : BaseStructure
+    {
+
+    }
+
+
+
     public static class KiwoomUtil
     {
         public static string GetDescription<T>(this T e) where T : IConvertible
