@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KiwoomTrStructure.cs" />
     <Compile Include="KiwoomApiWrapper.cs" />
     <Compile Include="MainFormFrame.cs">
       <SubType>Form</SubType>
