@@ -832,7 +832,7 @@ namespace SystemTrading
 
             if(rtn != null)
             {
-
+                SerDeUtil.PublishRealTimeStructure(rtn);
             }
 
         }
