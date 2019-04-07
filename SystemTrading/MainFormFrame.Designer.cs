@@ -34,6 +34,7 @@
             this.loginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this._openApi = new AxKHOpenAPILib.AxKHOpenAPI();
+            this.registerNRTInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuStripDefault.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._openApi)).BeginInit();
             this.SuspendLayout();
@@ -51,7 +52,8 @@
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loginToolStripMenuItem});
+            this.loginToolStripMenuItem,
+            this.registerNRTInfoToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(37, 20);
             this.toolStripMenuItem1.Text = "File";
@@ -77,6 +79,13 @@
             this._openApi.TabIndex = 0;
             this._openApi.TabStop = false;
             this._openApi.Visible = false;
+            // 
+            // registerNRTInfoToolStripMenuItem
+            // 
+            this.registerNRTInfoToolStripMenuItem.Name = "registerNRTInfoToolStripMenuItem";
+            this.registerNRTInfoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.registerNRTInfoToolStripMenuItem.Text = "Register NRT info";
+            this.registerNRTInfoToolStripMenuItem.Click += new System.EventHandler(this.registerNRTInfoToolStripMenuItem_Click);
             // 
             // Main
             // 
@@ -105,6 +114,7 @@
         private System.Windows.Forms.ToolStripMenuItem loginToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private AxKHOpenAPILib.AxKHOpenAPI _openApi;
+        private System.Windows.Forms.ToolStripMenuItem registerNRTInfoToolStripMenuItem;
     }
 }
 

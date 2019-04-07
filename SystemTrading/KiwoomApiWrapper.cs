@@ -104,6 +104,41 @@ namespace SystemTrading
             }
         }
 
+        public bool IsConnected()
+        {
+            return _openApi.GetConnectState() == 1;
+        }
+
+        private static string[] REALTIME_SCREEN_NUMBER_LIST = { "000000", "000001", "000002", "000003", "000004", "000005" };
+
+        private static string[] REALTIME_FID_LIST = {
+            "10",   // 현재가__실시간종가
+            "27",   // _최우선_매도호가
+            "181",  // 미결제_약정_전일대비
+            "214",  // 장시작 예상잔여시간
+            "216",  // 투자자별 ticker
+            "131"   // 시간외 매도호가 총잔량
+        };
+        
+
+        public void RegisterRealTime(string[] registered)
+        {
+            string registeredTarget = "";
+            string registeredFid = String.Join(";", REALTIME_FID_LIST);
+            for (int cnt = 0; cnt < ((registered.Length / 100) + 1); cnt++)
+            {
+                registeredTarget = String.Join(";",
+                    registered
+                    .Skip<string>(cnt * 100)
+                    .Take<string>(((cnt+1) * 100 < registered.Length ? 100 : registered.Length - cnt * 100)));
+                _openApi.SetRealReg(
+                    "000000", // REALTIME_SCREEN_NUMBER_LIST[cnt],
+                    registeredTarget,
+                    registeredFid,
+                    (cnt == 0 ? "0" : "1"));
+            }
+        }
+
         private void OnReceiveTrDataEventHandler(object sender, _DKHOpenAPIEvents_OnReceiveTrDataEvent e)
         {
             
