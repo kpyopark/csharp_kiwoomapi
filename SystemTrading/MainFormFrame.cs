@@ -12,6 +12,10 @@ namespace SystemTrading
 {
     public partial class Main : Form
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType
+            );
+
         private KiwoomAPI _kiwoomApi;
         public Main()
         {
@@ -19,6 +23,15 @@ namespace SystemTrading
             // TODO : Kiwoom API OCX Initialize
             _kiwoomApi = new KiwoomAPI(_openApi);
             _kiwoomApi.OnConnectEventHandler = OnConnectEventHandler;
+
+            // Status Field Bindings.
+            _kiwoomApi.OnRealTimeMessageCountModifiedHandler = RealTimeCounterModified;
+
+        }
+
+        private void RealTimeCounterModified(int newCount)
+        {
+            toolStripStatusLabelCount.Text = newCount.ToString();
         }
 
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -29,19 +42,52 @@ namespace SystemTrading
         private void loginToolStripMenuItem_Click(object sender, EventArgs e)
         {
             loginToolStripMenuItem.Enabled = false;
-            _kiwoomApi.CommConnect();
+            if(loginToolStripMenuItem.Checked)
+            {
+                // Login Status. Log out needed.
+                MessageBox.Show("Kiwoom API can't support Disconnection from Server. If you want to reset channel, you should restart this application.",
+                    "Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information,
+                    MessageBoxDefaultButton.Button1,
+                    MessageBoxOptions.ServiceNotification);
+                loginToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                // Not Logined. So we should try to connect to server.
+                _kiwoomApi.CommConnect();
+            }
+        }
+
+        private void SetLoginStatus(bool flag)
+        {
+            if(flag)
+            {
+                loginToolStripMenuItem.Text = "Logout";
+                loginToolStripMenuItem.Checked = true;
+                loginToolStripMenuItem.Enabled = true;
+                toolStripStatusLabelConnected.Text = "Connected";
+                registerNRTInfoToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                loginToolStripMenuItem.Text = "Login";
+                loginToolStripMenuItem.Checked = false;
+                loginToolStripMenuItem.Enabled = true;
+                toolStripStatusLabelConnected.Text = "Disconnected";
+                registerNRTInfoToolStripMenuItem.Enabled = false;
+            }
         }
 
         private void OnConnectEventHandler(bool result)
         {
             if (result)
             {
-                registerNRTInfoToolStripMenuItem.Enabled = true;
-
+                SetLoginStatus(true);
             }
             else
             {
-                registerNRTInfoToolStripMenuItem.Enabled = false;
                 loginToolStripMenuItem.Enabled = true;
             }
 
@@ -52,14 +98,40 @@ namespace SystemTrading
 
         }
 
+        private void RegisterNrtInfo()
+        {
+            if (_kiwoomApi.IsConnected())
+            {
+                _kiwoomApi.RegisterRealTime(GetRecommendedStocks());
+                toolStripStatusLabelRegistered.Text = "Registered";
+                registerNRTInfoToolStripMenuItem.Checked = true;
+            }
+        }
+
+        private void UnregisterNrtInfo()
+        {
+            if (_kiwoomApi.IsConnected())
+            {
+                _kiwoomApi.UnRegisterRealTime();
+                toolStripStatusLabelRegistered.Text = "Unregistered";
+                registerNRTInfoToolStripMenuItem.Checked = false;
+            }
+        }
+
         private void registerNRTInfoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             registerNRTInfoToolStripMenuItem.Enabled = false;
-            if (_kiwoomApi.IsConnected())
+            if(registerNRTInfoToolStripMenuItem.Checked)
             {
-                string[] m_recommededStocks = GetRecommendedStocks();
-                _kiwoomApi.RegisterRealTime(GetRecommendedStocks());
+                // Registered status. 
+                UnregisterNrtInfo();
             }
+            else
+            {
+                // Unregistered status. Registration needed.
+                RegisterNrtInfo();
+            }
+            registerNRTInfoToolStripMenuItem.Enabled = true;
         }
 
         private string[] GetRecommendedStocks()
@@ -568,6 +640,16 @@ namespace SystemTrading
                 "074600",
             };
             return rtn;
+        }
+
+        private void toolStripStatusLabelConnected_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripStatusLabelCount_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

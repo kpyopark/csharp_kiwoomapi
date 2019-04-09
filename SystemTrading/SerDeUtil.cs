@@ -18,7 +18,7 @@ namespace SystemTrading
         {
             using (var output = new StringWriter())
             {
-                JSON.Serialize(
+                JSON.SerializeDynamic(
                    structure,
                     output
                 );
@@ -69,7 +69,7 @@ namespace SystemTrading
                 {
                     string rtStruct;
                     rtStruct = realTimeQueue.Take();
-                    publisher.SendFrame($"{rtStruct}");
+                    publisher.SendMoreFrame("realtime").SendFrame($"{rtStruct}");
                 }
             }
         }

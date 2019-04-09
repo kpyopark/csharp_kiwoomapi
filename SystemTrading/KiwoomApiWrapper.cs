@@ -45,9 +45,26 @@ namespace SystemTrading
 
     public class KiwoomAPI
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType
+            );
+
         private AxKHOpenAPI _openApi;
         public delegate void OnConnect(bool result);
         public OnConnect OnConnectEventHandler;
+
+        private int _rtmessageCounter;
+
+        public delegate void OnRealTimeMessageCountModified(int newCount);
+        public OnRealTimeMessageCountModified OnRealTimeMessageCountModifiedHandler;
+
+        public int RealTimeMessageCounter
+        {
+            get
+            {
+                return _rtmessageCounter;
+            }
+        }
 
         public KiwoomAPI(AxKHOpenAPI openApi)
         {
@@ -57,6 +74,8 @@ namespace SystemTrading
             _openApi.OnReceiveRealData += OnReceiveRealDataEventHandler;
 
             OnConnectEventHandler = initialize;
+
+            SerDeUtil.PublishRealTimeStructure(new Tr선물시세());
         }
 
         public int CommConnect()
@@ -76,17 +95,41 @@ namespace SystemTrading
 
         private int GetCommRealDataInt(string realType, int fid)
         {
-            return Int32.Parse(_openApi.GetCommRealData(realType, fid));
+            try
+            {
+                return Int32.Parse(_openApi.GetCommRealData(realType, fid));
+            }
+            catch (Exception)
+            {
+                log.WarnFormat("TYPE CONVERSION FAILED. REAL_TYPE: #{0}#, FID: #{1}#, REAL_VALUE: #{2}#", realType, fid, _openApi.GetCommRealData(realType, fid));
+                return 0;
+            }
         }
 
         private long GetCommRealDataLong(string realType, int fid)
         {
-            return long.Parse(_openApi.GetCommRealData(realType, fid));
+            try
+            {
+                return long.Parse(_openApi.GetCommRealData(realType, fid));
+            }
+            catch(Exception)
+            {
+                log.WarnFormat("TYPE CONVERSION FAILED. REAL_TYPE: #{0}#, FID: #{1}#, REAL_VALUE: #{2}#", realType, fid, _openApi.GetCommRealData(realType, fid));
+                return 0;
+            }
         }
 
         private float GetCommRealDataFloat(string realType, int fid)
         {
-            return float.Parse(_openApi.GetCommRealData(realType, fid));
+            try
+            {
+                return float.Parse(_openApi.GetCommRealData(realType, fid));
+            }
+            catch (Exception)
+            {
+                log.WarnFormat("TYPE CONVERSION FAILED. REAL_TYPE: #{0}#, FID: #{1}#, REAL_VALUE: #{2}#", realType, fid, _openApi.GetCommRealData(realType, fid));
+                return 0f;
+            }
         }
 
         private void OnEventConnectEventHandler(object sender, _DKHOpenAPIEvents_OnEventConnectEvent e)
@@ -132,11 +175,22 @@ namespace SystemTrading
                     .Skip<string>(cnt * 100)
                     .Take<string>(((cnt+1) * 100 < registered.Length ? 100 : registered.Length - cnt * 100)));
                 _openApi.SetRealReg(
-                    "000000", // REALTIME_SCREEN_NUMBER_LIST[cnt],
+                    "0000", // REALTIME_SCREEN_NUMBER_LIST[cnt],
                     registeredTarget,
                     registeredFid,
                     (cnt == 0 ? "0" : "1"));
             }
+        }
+
+        public void UnRegisterRealTime()
+        {
+            _openApi.SetRealReg("0000", "005930", String.Join(";", REALTIME_FID_LIST), "0");
+            _openApi.SetRealRemove("0000", "005930");
+        }
+
+        public void Disconnect()
+        {
+            // _openApi.CommTerminate();    // Not Supported. 
         }
 
         private void OnReceiveTrDataEventHandler(object sender, _DKHOpenAPIEvents_OnReceiveTrDataEvent e)
@@ -868,6 +922,9 @@ namespace SystemTrading
             if(rtn != null)
             {
                 SerDeUtil.PublishRealTimeStructure(rtn);
+                _rtmessageCounter++;
+                if (OnRealTimeMessageCountModifiedHandler != null)
+                    OnRealTimeMessageCountModifiedHandler(_rtmessageCounter);
             }
 
         }
